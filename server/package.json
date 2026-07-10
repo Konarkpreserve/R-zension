@@ -1,0 +1,12 @@
+{
+  "name": "@r-zension/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo \"Server workspace is ready. Express has not been initialized yet.\"",
+    "build": "echo \"Server build script is ready. Add the server build command when the app is initialized.\"",
+    "lint": "echo \"Server lint script is ready. Add the server linter when dependencies are introduced.\"",
+    "format": "echo \"Server format script is ready. Add the server formatter when dependencies are introduced.\""
+  }
+}
