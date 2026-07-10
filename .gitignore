@@ -1,0 +1,82 @@
+# ==========================
+# Node.js
+# ==========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==========================
+# Build Output
+# ==========================
+dist/
+build/
+coverage/
+
+# ==========================
+# Environment Files
+# ==========================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ==========================
+# Logs
+# ==========================
+logs/
+*.log
+
+# ==========================
+# OS Files
+# ==========================
+.DS_Store
+Thumbs.db
+
+# ==========================
+# VS Code
+# ==========================
+.vscode/settings.json
+
+# Uncomment if you don't want to share extensions
+# .vscode/
+
+# ==========================
+# IntelliJ
+# ==========================
+.idea/
+
+# ==========================
+# Python
+# ==========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.venv/
+venv/
+
+# ==========================
+# Oracle Engine
+# ==========================
+oracle-engine/.venv/
+oracle-engine/__pycache__/
+
+# ==========================
+# Prisma
+# ==========================
+prisma/dev.db
+
+# ==========================
+# Temporary Files
+# ==========================
+*.tmp
+*.temp
+
+# ==========================
+# Generated Files
+# ==========================
+*.tsbuildinfo
