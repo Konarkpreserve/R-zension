@@ -1,0 +1,488 @@
+# ADR-015: Notification Strategy
+
+| Field | Value |
+|-------|-------|
+| ADR | 015 |
+| Title | Notification Strategy |
+| Status | Accepted |
+| Date | 2026-07-27 |
+| Decision Makers | R-zension Engineering Team |
+
+---
+
+# Context
+
+R-zension generates numerous user events that require timely communication.
+
+Examples include
+
+- Goal completion
+- Rank changes
+- Achievement unlocks
+- Organization invitations
+- AI insights
+- Deadlines
+- Administrative announcements
+
+A unified notification strategy is required to ensure consistent delivery, user control, and future scalability across multiple notification channels.
+
+---
+
+# Decision
+
+R-zension will implement a centralized Notification Service responsible for creating, managing, and delivering notifications.
+
+Notifications are event-driven and generated from domain events rather than direct service calls.
+
+---
+
+# Notification Architecture
+
+```text
+Business Event
+
+↓
+
+Notification Service
+
+↓
+
+Preference Engine
+
+↓
+
+Channel Selection
+
+↓
+
+Delivery
+
+↓
+
+User
+```
+
+The Notification Service remains independent from business logic.
+
+---
+
+# Objectives
+
+The notification system should
+
+- Deliver relevant information
+- Avoid duplicate notifications
+- Respect user preferences
+- Support multiple channels
+- Scale independently
+- Be reliable and traceable
+
+---
+
+# Notification Categories
+
+## System Notifications
+
+Examples
+
+- Maintenance
+- Platform updates
+- Security alerts
+- Terms updates
+
+---
+
+## Ranking Notifications
+
+Examples
+
+- Rank increased
+- Rank decreased
+- Entered Top 100
+- Lost leaderboard position
+
+---
+
+## Achievement Notifications
+
+Examples
+
+- Badge unlocked
+- Milestone completed
+- Streak achieved
+- New record
+
+---
+
+## Goal Notifications
+
+Examples
+
+- Goal assigned
+- Goal completed
+- Goal overdue
+- Goal reminder
+
+---
+
+## Organization Notifications
+
+Examples
+
+- Invitation received
+- Member joined
+- Role changed
+- Organization announcement
+
+---
+
+## Oracle AI Notifications
+
+Examples
+
+- Weekly insights
+- Performance summary
+- Recommendation available
+- Prediction generated
+
+---
+
+# Notification Channels
+
+Initial channels
+
+- In-App Notifications
+
+Future channels
+
+- Email
+- Push Notifications
+- SMS
+- Microsoft Teams
+- Slack
+- Discord
+- Webhooks
+
+The notification engine should remain channel-agnostic.
+
+---
+
+# Event Flow
+
+```text
+Goal Completed
+
+↓
+
+GoalCompleted Event
+
+↓
+
+Notification Service
+
+↓
+
+Preference Check
+
+↓
+
+Create Notification
+
+↓
+
+Deliver
+```
+
+---
+
+# Notification Structure
+
+Every notification should include
+
+- Notification ID
+- User ID
+- Organization ID
+- Type
+- Category
+- Title
+- Message
+- Metadata
+- Priority
+- Status
+- Timestamp
+
+Example
+
+```json
+{
+  "notificationId": "NTF-00192",
+  "type": "RANK_CHANGE",
+  "title": "Your rank improved!",
+  "message": "Congratulations! You moved from Rank 8 to Rank 5.",
+  "priority": "HIGH",
+  "status": "UNREAD"
+}
+```
+
+---
+
+# Priority Levels
+
+| Priority | Description |
+|----------|-------------|
+| Critical | Immediate attention required |
+| High | Important update |
+| Medium | Standard activity |
+| Low | Informational |
+
+Higher-priority notifications may use additional delivery channels in the future.
+
+---
+
+# Delivery Strategy
+
+Notifications should be delivered
+
+- Asynchronously
+- Independently
+- Reliably
+
+Notification failures must not affect the originating business transaction.
+
+---
+
+# Read Status
+
+Notifications support
+
+- Unread
+- Read
+- Archived
+- Deleted (Soft Delete)
+
+Users may manage their notification history.
+
+---
+
+# User Preferences
+
+Users should be able to configure
+
+- Enabled notification categories
+- Delivery channels
+- Quiet hours
+- Digest frequency
+
+Organization administrators may define default preferences.
+
+---
+
+# Notification Deduplication
+
+Duplicate notifications should be avoided.
+
+Examples
+
+Instead of sending
+
+```text
+Rank changed.
+
+Rank changed.
+
+Rank changed.
+```
+
+Aggregate into
+
+```text
+Your ranking changed multiple times today.
+```
+
+where appropriate.
+
+---
+
+# Expiration
+
+Certain notifications may expire.
+
+Examples
+
+- Temporary announcements
+- Event reminders
+- Invitations
+- Promotional messages
+
+Expired notifications should no longer be delivered.
+
+---
+
+# Retry Policy
+
+If delivery fails
+
+- Retry automatically
+- Log failures
+- Respect retry limits
+- Mark permanently failed notifications for review
+
+---
+
+# Security
+
+Notifications should
+
+- Respect access permissions
+- Never expose confidential information
+- Avoid including authentication tokens
+- Minimize sensitive data
+
+Links should require authentication before displaying protected resources.
+
+---
+
+# Monitoring
+
+Track
+
+- Notifications created
+- Delivery success rate
+- Delivery failures
+- Average delivery latency
+- Read rate
+- Click-through rate (future)
+- Retry count
+
+---
+
+# Performance Goals
+
+| Metric | Target |
+|---------|---------|
+| Notification Creation | < 50 ms |
+| In-App Delivery | < 200 ms |
+| Delivery Success Rate | > 99.9% |
+
+---
+
+# Storage
+
+Notification records should store
+
+- Metadata
+- Delivery status
+- Read status
+- Creation timestamp
+- Expiration timestamp
+- Channel history
+
+Historical notifications support auditing and analytics.
+
+---
+
+# Alternatives Considered
+
+## Direct Notification Calls
+
+Pros
+
+- Easy implementation
+
+Cons
+
+- Tight coupling
+- Difficult expansion
+- Duplicate logic
+
+Decision
+
+Rejected.
+
+---
+
+## Embedded Notifications
+
+Pros
+
+- Simple architecture
+
+Cons
+
+- Poor scalability
+- Difficult maintenance
+
+Decision
+
+Rejected.
+
+---
+
+## Centralized Notification Service
+
+Pros
+
+- Reusable
+- Event-driven
+- Channel independent
+- Scalable
+- Easy monitoring
+
+Decision
+
+Accepted.
+
+---
+
+# Consequences
+
+Positive
+
+- Better user experience
+- Centralized notification management
+- Easier feature expansion
+- Improved reliability
+- Consistent notification behavior
+
+Negative
+
+- Additional infrastructure
+- Queue management
+- More monitoring requirements
+
+---
+
+# Future Evolution
+
+Future enhancements include
+
+- Real-time WebSocket notifications
+- Push notification providers
+- Email templates
+- Notification batching
+- AI-prioritized notifications
+- Smart quiet hours
+- Notification scheduling
+- Multi-language localization
+- Rich interactive notifications
+
+---
+
+# Decision Summary
+
+R-zension adopts a centralized, event-driven Notification Service that delivers timely, reliable, and configurable notifications across multiple channels while remaining independent of business logic. This architecture improves scalability, maintainability, and user experience while providing a strong foundation for future communication channels.
+
+---
+
+# Related ADRs
+
+- ADR-002 System Architecture
+- ADR-004 AI Service Architecture
+- ADR-009 Caching Strategy
+- ADR-010 Error Handling Strategy
+- ADR-013 Oracle AI Decision System
+- ADR-014 Event-Driven Architecture
+- API Specification
+- Monitoring Guide
+- System Architecture
+```

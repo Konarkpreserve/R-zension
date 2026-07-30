@@ -576,6 +576,150 @@ Every release must verify
 
 ---
 
+# Security
+
+Security is implemented as a cross-cutting concern throughout the R-zension architecture rather than as a standalone component.
+
+The platform follows a **Defense-in-Depth** approach where every layer validates requests, enforces authorization, protects sensitive data, and records security-relevant activities.
+
+## Security Principles
+
+- Authentication using JWT Access & Refresh Tokens
+- Role-Based Access Control (RBAC)
+- Organization (Tenant) Isolation
+- Secure Password Hashing (bcrypt)
+- HTTPS for all external communication
+- Input Validation & Sanitization
+- Centralized Error Handling
+- Audit Logging
+- Principle of Least Privilege
+- Secure Secret Management
+- Container Security
+- API Rate Limiting (Future)
+- Multi-Factor Authentication (Future)
+
+## Security Layers
+
+```text
+User
+
+↓
+
+HTTPS
+
+↓
+
+Authentication
+
+↓
+
+Authorization (RBAC)
+
+↓
+
+Input Validation
+
+↓
+
+Business Logic
+
+↓
+
+Database Access
+
+↓
+
+Audit Logging
+
+↓
+
+Monitoring
+```
+
+## Authentication
+
+Users authenticate using JWT-based authentication.
+
+The backend validates every access token before allowing access to protected resources.
+
+Refresh tokens are used to obtain new access tokens without requiring users to log in again.
+
+## Authorization
+
+Every request is validated against
+
+- User Identity
+- User Role
+- Organization Membership
+- Resource Ownership
+
+Only authorized users may access protected resources.
+
+## Multi-Tenant Isolation
+
+Every tenant-owned resource contains an `organizationId`.
+
+All queries, API endpoints, caches, AI requests, and file access are scoped to the authenticated organization, preventing cross-tenant data access.
+
+## Data Protection
+
+Sensitive information is protected through
+
+- Password hashing
+- Encrypted HTTPS communication
+- Secure secret storage
+- Randomized file names
+- Database constraints
+- Access controls
+
+Sensitive credentials are never stored in source code or exposed to clients.
+
+## API Security
+
+The API implements
+
+- JWT validation
+- Request validation
+- Standardized error responses
+- Rate limiting (Future)
+- API versioning
+- Secure CORS configuration
+
+## Oracle AI Security
+
+Oracle AI operates as an isolated internal service.
+
+It receives only the minimum required business data and cannot directly modify application state, scores, rankings, or database records.
+
+## Audit & Monitoring
+
+Security-relevant actions are recorded through centralized audit logging.
+
+Examples include
+
+- Login attempts
+- Permission changes
+- Administrative actions
+- Ranking modifications
+- AI requests
+- File operations
+
+Monitoring systems track authentication failures, suspicious activity, and system health.
+
+## Future Enhancements
+
+Future security improvements include
+
+- Multi-Factor Authentication (MFA)
+- OAuth/OpenID Connect
+- Web Application Firewall (WAF)
+- Security Information and Event Management (SIEM)
+- Automated threat detection
+- Secret rotation
+- Zero Trust networking
+- Penetration testing automation
+- Compliance reporting
+
 # References
 
 - system-architecture.md

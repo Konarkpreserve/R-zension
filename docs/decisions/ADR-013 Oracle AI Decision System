@@ -1,0 +1,306 @@
+# ADR-013: Oracle AI Decision System
+
+| Field | Value |
+|-------|-------|
+| ADR | 013 |
+| Title | Oracle AI Decision System |
+| Status | Accepted |
+| Date | 2026-07-27 |
+| Decision Makers | R-zension Engineering Team |
+
+---
+
+# Context
+
+Oracle is the intelligence layer of R-zension.
+
+Unlike traditional analytics dashboards that only display numbers, Oracle analyzes platform data to generate insights, recommendations, predictions, and explanations.
+
+The AI system must remain explainable, secure, deterministic where required, and isolated from core business logic.
+
+---
+
+# Decision
+
+Oracle will operate as an independent AI microservice.
+
+The service is responsible for interpreting platform data and generating intelligent recommendations without directly modifying business data.
+
+Oracle is advisory rather than authoritative.
+
+---
+
+# Responsibilities
+
+Oracle is responsible for
+
+- Ranking explanations
+- Score explanations
+- Performance summaries
+- Goal recommendations
+- Trend detection
+- Predictive analytics
+- Insight generation
+- AI chat interactions
+- Future anomaly detection
+
+Oracle does not
+
+- Modify database records
+- Change rankings
+- Assign scores
+- Authenticate users
+- Execute business rules
+
+---
+
+# Architecture
+
+```text
+Frontend
+
+↓
+
+Express Backend
+
+↓
+
+Oracle API
+
+↓
+
+LLM Provider
+
+↓
+
+Response
+
+↓
+
+Express
+
+↓
+
+Frontend
+```
+
+---
+
+# Communication
+
+Only the Express Backend may communicate with Oracle.
+
+Frontend clients never access Oracle directly.
+
+This centralizes
+
+- Authentication
+- Authorization
+- Rate limiting
+- Logging
+- Monitoring
+
+---
+
+# AI Inputs
+
+Oracle may consume
+
+- User profile
+- Rankings
+- Scores
+- Historical activity
+- Goals
+- Organization settings
+- Analytics summaries
+
+Sensitive information should be minimized before transmission.
+
+---
+
+# AI Outputs
+
+Oracle generates
+
+- Explanations
+- Recommendations
+- Summaries
+- Insights
+- Predictions
+
+Outputs are informational and must not alter system state automatically.
+
+---
+
+# Prompt Strategy
+
+Prompts should be
+
+- Version controlled
+- Reusable
+- Modular
+- Tested
+- Stored outside application logic
+
+Prompt templates should not be hardcoded throughout the codebase.
+
+---
+
+# Explainability
+
+Every recommendation should include sufficient reasoning for users to understand why it was produced.
+
+Oracle should avoid opaque or unsupported conclusions.
+
+---
+
+# Deterministic Operations
+
+Core business logic remains deterministic.
+
+Oracle should never determine
+
+- Official score
+- Official rank
+- Authorization decisions
+- Database updates
+
+These remain the responsibility of backend services.
+
+---
+
+# Failure Handling
+
+If Oracle is unavailable
+
+- Core platform remains operational
+- AI features degrade gracefully
+- Users receive fallback messaging
+- Requests are logged for monitoring
+
+AI failure must not prevent essential platform functionality.
+
+---
+
+# Security
+
+Oracle must
+
+- Receive only necessary data
+- Avoid storing sensitive information unnecessarily
+- Validate all incoming requests
+- Authenticate internal service communication
+
+Prompt injection mitigation should be implemented where applicable.
+
+---
+
+# Performance Goals
+
+| Metric | Target |
+|---------|---------|
+| AI Request | < 5 seconds |
+| Insight Generation | < 3 seconds |
+| Service Availability | > 99.5% |
+
+---
+
+# Monitoring
+
+Track
+
+- AI request count
+- Token usage
+- Latency
+- Failure rate
+- Provider errors
+- Prompt versions
+- Cost metrics
+
+---
+
+# Alternatives Considered
+
+## AI Embedded in Backend
+
+Pros
+
+- Fewer services
+
+Cons
+
+- Tight coupling
+- Difficult scaling
+- Harder maintenance
+
+Decision
+
+Rejected.
+
+---
+
+## Independent AI Service
+
+Pros
+
+- Independent deployment
+- Better scalability
+- Easier experimentation
+- Technology flexibility
+- Improved maintainability
+
+Decision
+
+Accepted.
+
+---
+
+# Consequences
+
+Positive
+
+- Loose coupling
+- Independent scaling
+- Easier provider replacement
+- Cleaner architecture
+- Better observability
+
+Negative
+
+- Additional infrastructure
+- Network latency
+- Separate deployment pipeline
+
+---
+
+# Future Evolution
+
+Future enhancements include
+
+- Multiple LLM providers
+- Local model support
+- Model routing
+- Retrieval-Augmented Generation (RAG)
+- Personalized recommendations
+- AI memory
+- Autonomous analytics agents
+
+---
+
+# Decision Summary
+
+Oracle is implemented as an independent AI microservice responsible for generating explanations, insights, recommendations, and predictions. Business decisions remain under the control of the backend, ensuring transparency, reliability, and maintainability.
+
+---
+
+# Related ADRs
+
+- ADR-002 System Architecture
+- ADR-003 Technology Stack
+- ADR-004 AI Service Architecture
+- ADR-010 Error Handling Strategy
+- ADR-011 Ranking System Design
+- ADR-012 Scoring System Design
+- Oracle AI Architecture
+- API Specification
+```

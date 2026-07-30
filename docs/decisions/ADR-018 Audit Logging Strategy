@@ -1,0 +1,472 @@
+# ADR-018: Audit Logging Strategy
+
+| Field | Value |
+|-------|-------|
+| ADR | 018 |
+| Title | Audit Logging Strategy |
+| Status | Accepted |
+| Date | 2026-07-27 |
+| Decision Makers | R-zension Engineering Team |
+
+---
+
+# Context
+
+R-zension manages sensitive organizational data, rankings, scores, goals, user accounts, and AI-generated insights.
+
+To ensure security, accountability, compliance, and operational transparency, the platform requires a comprehensive audit logging system.
+
+Audit logs are not intended for debugging. They serve as an immutable historical record of significant business and security events.
+
+---
+
+# Decision
+
+R-zension will implement a centralized audit logging system that records all security-sensitive and business-critical actions across the platform.
+
+Audit logs are append-only and cannot be modified by application users.
+
+---
+
+# Objectives
+
+The audit logging system should
+
+- Track important user actions
+- Record administrative changes
+- Support forensic investigations
+- Improve security visibility
+- Enable compliance reporting
+- Maintain complete accountability
+
+---
+
+# Architecture
+
+```text
+User Action
+
+↓
+
+Business Service
+
+↓
+
+Business Operation
+
+↓
+
+Audit Event
+
+↓
+
+Audit Logger
+
+↓
+
+PostgreSQL Audit Table
+
+↓
+
+Analytics / Monitoring
+```
+
+Audit logging should occur after successful business operations whenever possible.
+
+---
+
+# Audit Scope
+
+The system should log
+
+- Authentication events
+- Authorization failures
+- Organization changes
+- User management
+- Goal management
+- Score changes
+- Ranking updates
+- Role assignments
+- Permission changes
+- Administrative actions
+- AI requests
+- File operations
+- Configuration changes
+
+---
+
+# Authentication Events
+
+Examples
+
+- Login
+- Logout
+- Failed login
+- Password change
+- Password reset
+- Token refresh
+- MFA events (Future)
+
+---
+
+# User Management Events
+
+Examples
+
+- User created
+- User updated
+- User deleted
+- User suspended
+- User restored
+- Role changed
+
+---
+
+# Organization Events
+
+Examples
+
+- Organization created
+- Organization updated
+- Member invited
+- Member removed
+- Organization archived
+
+---
+
+# Ranking Events
+
+Examples
+
+- Rank changed
+- Manual score adjustment
+- Leaderboard recalculated
+- Seasonal reset
+
+---
+
+# Oracle AI Events
+
+Examples
+
+- AI request submitted
+- Recommendation generated
+- Prediction requested
+- AI service failure
+
+Only metadata should be logged.
+
+Prompts and sensitive AI context should not be stored unless explicitly required.
+
+---
+
+# File Events
+
+Examples
+
+- Upload
+- Download
+- Delete
+- Restore
+- Export
+
+---
+
+# Audit Record Structure
+
+Each audit record should include
+
+- Audit ID
+- Timestamp
+- User ID
+- Organization ID
+- Action
+- Resource Type
+- Resource ID
+- Request ID
+- IP Address
+- User Agent
+- Service
+- Status
+- Metadata
+
+---
+
+# Example Record
+
+```json
+{
+  "auditId": "AUD-81F4A2",
+  "timestamp": "2026-07-27T18:20:45Z",
+  "organizationId": "ORG-201",
+  "userId": "USR-983",
+  "action": "GOAL_COMPLETED",
+  "resourceType": "Goal",
+  "resourceId": "GL-284",
+  "status": "SUCCESS",
+  "requestId": "REQ-91FA22"
+}
+```
+
+---
+
+# Immutability
+
+Audit logs are append-only.
+
+Application users
+
+- Cannot edit
+- Cannot delete
+- Cannot overwrite
+
+Only retention policies may archive or purge logs after the configured retention period.
+
+---
+
+# Retention Policy
+
+Recommended retention
+
+| Audit Type | Retention |
+|------------|-----------|
+| Authentication | 1 Year |
+| Security | 3 Years |
+| Administrative | 5 Years |
+| Business Operations | 3 Years |
+
+Retention periods may vary according to legal and organizational requirements.
+
+---
+
+# Search & Filtering
+
+Audit logs should support filtering by
+
+- User
+- Organization
+- Date range
+- Resource
+- Action
+- Status
+- Request ID
+
+This enables efficient investigations.
+
+---
+
+# Correlation IDs
+
+Every audit record should include a request or correlation ID.
+
+Example
+
+```text
+REQ-91FA22
+```
+
+This allows tracing activity across multiple services.
+
+---
+
+# Security
+
+Audit logs should never contain
+
+- Passwords
+- JWT tokens
+- API keys
+- Encryption keys
+- Secrets
+- Sensitive personal information unless required
+
+Sensitive metadata should be masked where appropriate.
+
+---
+
+# Access Control
+
+Audit logs are visible only to
+
+- Platform Administrators
+- Organization Administrators (tenant-scoped)
+- Security Officers (Future)
+
+Standard users cannot access audit records.
+
+---
+
+# Monitoring
+
+Track
+
+- Audit events per minute
+- Failed audit writes
+- Storage growth
+- Security event frequency
+- Administrative activity
+- Suspicious behavior
+
+---
+
+# Performance Goals
+
+| Metric | Target |
+|---------|---------|
+| Audit Write | < 50 ms |
+| Audit Query | < 200 ms |
+| Write Success Rate | > 99.99% |
+
+Audit logging should not noticeably increase request latency.
+
+---
+
+# Storage Strategy
+
+Audit logs are stored separately from operational business data.
+
+Future enhancements may move audit records to
+
+- Data warehouse
+- Log analytics platform
+- SIEM
+- Cold storage
+
+Operational tables should remain optimized for transactional workloads.
+
+---
+
+# Failure Handling
+
+If audit logging fails
+
+- Retry logging
+- Record the failure
+- Notify monitoring systems
+
+Critical business operations should continue unless compliance requirements mandate otherwise.
+
+---
+
+# Compliance
+
+The audit logging system is designed to support
+
+- Internal governance
+- Security investigations
+- Operational accountability
+- Compliance reporting
+
+Specific regulatory requirements may be added in future deployments.
+
+---
+
+# Alternatives Considered
+
+## Application Logs Only
+
+Pros
+
+- Simple implementation
+
+Cons
+
+- Not structured
+- Difficult searching
+- Not suitable for compliance
+- Easily rotated
+
+Decision
+
+Rejected.
+
+---
+
+## Database Triggers
+
+Pros
+
+- Automatic recording
+
+Cons
+
+- Difficult maintenance
+- Limited business context
+- Hard to extend
+
+Decision
+
+Rejected.
+
+---
+
+## Centralized Audit Service
+
+Pros
+
+- Consistent
+- Structured
+- Searchable
+- Scalable
+- Independent
+- Compliance-friendly
+
+Decision
+
+Accepted.
+
+---
+
+# Consequences
+
+Positive
+
+- Complete accountability
+- Better security investigations
+- Easier compliance
+- Improved operational visibility
+- Strong forensic support
+
+Negative
+
+- Additional storage requirements
+- Increased monitoring needs
+- Long-term retention management
+
+---
+
+# Future Evolution
+
+Future enhancements include
+
+- Immutable storage
+- Digital signatures
+- SIEM integration
+- Real-time anomaly detection
+- Compliance dashboards
+- AI-assisted threat detection
+- Cross-service trace visualization
+- Long-term archival policies
+
+---
+
+# Decision Summary
+
+R-zension adopts a centralized, append-only audit logging strategy that records business-critical and security-sensitive events across all services. Audit records provide accountability, traceability, operational visibility, and a strong foundation for security investigations and future compliance requirements.
+
+---
+
+# Related ADRs
+
+- ADR-002 System Architecture
+- ADR-005 Database Strategy
+- ADR-007 Authentication Strategy
+- ADR-010 Error Handling Strategy
+- ADR-013 Oracle AI Decision System
+- ADR-014 Event-Driven Architecture
+- ADR-017 Multi-Tenancy Strategy
+- Security Guide
+- Monitoring Guide
+- Database Design
+- Deployment Guide
+```

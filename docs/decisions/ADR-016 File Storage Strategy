@@ -1,0 +1,525 @@
+# ADR-016: File Storage Strategy
+
+| Field | Value |
+|-------|-------|
+| ADR | 016 |
+| Title | File Storage Strategy |
+| Status | Accepted |
+| Date | 2026-07-27 |
+| Decision Makers | R-zension Engineering Team |
+
+---
+
+# Context
+
+R-zension will manage various types of user-generated and system-generated files throughout its lifecycle.
+
+Examples include
+
+- User profile images
+- Organization logos
+- Documents
+- AI-generated reports
+- Exported analytics
+- Attachments
+- Future media assets
+
+Storing binary files directly in the relational database would negatively impact database performance, increase backup size, and reduce scalability.
+
+A dedicated storage strategy is required.
+
+---
+
+# Decision
+
+R-zension will separate **metadata storage** from **binary file storage**.
+
+- PostgreSQL stores file metadata.
+- Binary files are stored in dedicated object storage.
+- The application references files using unique identifiers and URLs.
+
+---
+
+# Storage Architecture
+
+```text
+User
+
+↓
+
+Frontend
+
+↓
+
+Express Backend
+
+↓
+
+Validation
+
+↓
+
+Object Storage
+
+↓
+
+File Metadata
+
+↓
+
+PostgreSQL
+```
+
+---
+
+# Objectives
+
+The storage system should
+
+- Scale independently
+- Support large files
+- Improve database performance
+- Secure uploaded content
+- Enable future CDN integration
+- Simplify backups
+
+---
+
+# Storage Responsibilities
+
+## PostgreSQL
+
+Stores
+
+- File ID
+- Owner
+- Organization
+- File name
+- MIME type
+- Size
+- Storage path
+- Upload date
+- Version
+- Status
+
+Never stores
+
+- Binary content
+
+---
+
+## Object Storage
+
+Stores
+
+- Images
+- Documents
+- Reports
+- Attachments
+- Export files
+- AI-generated assets
+
+---
+
+# Supported File Types
+
+Initial support
+
+- PNG
+- JPG
+- JPEG
+- SVG
+- PDF
+- DOCX
+- XLSX
+- CSV
+- TXT
+
+Future support
+
+- PPTX
+- ZIP
+- MP4
+- WebM
+- Audio files
+
+---
+
+# Upload Flow
+
+```text id="c3zmxw"
+User
+
+↓
+
+Upload Request
+
+↓
+
+Validation
+
+↓
+
+Virus Scan (Future)
+
+↓
+
+Object Storage
+
+↓
+
+Metadata Saved
+
+↓
+
+Success Response
+```
+
+---
+
+# Download Flow
+
+```text id="u2ynxe"
+User
+
+↓
+
+Authentication
+
+↓
+
+Authorization
+
+↓
+
+Metadata Lookup
+
+↓
+
+Object Storage
+
+↓
+
+File Response
+```
+
+---
+
+# Metadata Model
+
+Each file should include
+
+- File ID
+- Original filename
+- Stored filename
+- Owner ID
+- Organization ID
+- MIME type
+- Size
+- Checksum
+- Upload timestamp
+- Last modified
+- Status
+
+---
+
+# File Naming
+
+Uploaded filenames should never be stored as the physical filename.
+
+Generate unique identifiers.
+
+Example
+
+```text
+f_93b7f8c29d41.pdf
+
+img_8f7bc92a.png
+
+report_5dca1234.xlsx
+```
+
+This prevents collisions and improves security.
+
+---
+
+# Directory Structure
+
+Logical organization
+
+```text
+organizations/
+
+users/
+
+reports/
+
+avatars/
+
+exports/
+
+documents/
+```
+
+Storage providers may implement equivalent bucket structures.
+
+---
+
+# Maximum File Sizes
+
+Recommended defaults
+
+| File Type | Maximum Size |
+|-----------|--------------|
+| Avatar | 5 MB |
+| Document | 25 MB |
+| Report | 50 MB |
+| Export | 100 MB |
+
+Limits may be configured by administrators.
+
+---
+
+# Validation
+
+Validate
+
+- MIME type
+- File extension
+- File size
+- Ownership
+- Authorization
+
+Reject unsupported uploads before storage.
+
+---
+
+# Security
+
+Uploaded files should
+
+- Be authenticated
+- Be authorized
+- Be virus scanned (future)
+- Use randomized filenames
+- Never execute as server-side code
+
+Executable uploads should be blocked by default.
+
+---
+
+# Access Control
+
+Files belong to
+
+- Individual users
+- Organizations
+- System resources
+
+Access decisions should follow the platform authorization model.
+
+---
+
+# Versioning
+
+Future support may include
+
+- File version history
+- Version rollback
+- Change tracking
+- Previous revisions
+
+Current implementation stores only the latest version.
+
+---
+
+# Deletion Strategy
+
+Deletion should follow a soft-delete workflow.
+
+```text
+Database
+
+↓
+
+Mark Deleted
+
+↓
+
+Retention Period
+
+↓
+
+Permanent Removal
+
+↓
+
+Storage Cleanup
+```
+
+This supports recovery and auditing.
+
+---
+
+# Backup Strategy
+
+Back up independently
+
+- PostgreSQL metadata
+- Object storage
+
+Both backups should be restorable independently.
+
+---
+
+# Performance Goals
+
+| Metric | Target |
+|---------|---------|
+| Upload Start | < 200 ms |
+| Metadata Save | < 100 ms |
+| Download Initialization | < 150 ms |
+
+Large files should support streaming where appropriate.
+
+---
+
+# Monitoring
+
+Track
+
+- Upload count
+- Download count
+- Failed uploads
+- Failed downloads
+- Storage utilization
+- Average file size
+- Upload latency
+
+---
+
+# Storage Providers
+
+Development
+
+- Local Docker volume
+
+Production options
+
+- Amazon S3
+- Cloudflare R2
+- Google Cloud Storage
+- Azure Blob Storage
+- MinIO (Self-hosted)
+
+The application should remain storage-provider agnostic.
+
+---
+
+# Alternatives Considered
+
+## Database BLOB Storage
+
+Pros
+
+- Simple querying
+- Single backup
+
+Cons
+
+- Large database size
+- Slower performance
+- Poor scalability
+
+Decision
+
+Rejected.
+
+---
+
+## Local Server Filesystem
+
+Pros
+
+- Easy setup
+
+Cons
+
+- Difficult scaling
+- Poor redundancy
+- Complicated backups
+
+Decision
+
+Accepted for local development only.
+
+---
+
+## Object Storage
+
+Pros
+
+- Highly scalable
+- Cost effective
+- Reliable
+- CDN compatible
+- Cloud native
+
+Decision
+
+Accepted.
+
+---
+
+# Consequences
+
+Positive
+
+- Smaller databases
+- Faster backups
+- Better scalability
+- Easier CDN integration
+- Independent storage scaling
+
+Negative
+
+- Additional infrastructure
+- Separate backup strategy
+- More deployment configuration
+
+---
+
+# Future Evolution
+
+Future enhancements include
+
+- CDN integration
+- Image optimization
+- Automatic thumbnail generation
+- AI content analysis
+- File deduplication
+- Encrypted storage
+- Multi-region replication
+- Lifecycle policies
+- Signed download URLs
+
+---
+
+# Decision Summary
+
+R-zension adopts a hybrid file storage architecture where PostgreSQL stores metadata while binary content is stored in dedicated object storage. This design improves scalability, security, maintainability, and performance while remaining independent of any specific storage provider.
+
+---
+
+# Related ADRs
+
+- ADR-002 System Architecture
+- ADR-005 Database Strategy
+- ADR-008 Containerization Strategy
+- ADR-010 Error Handling Strategy
+- ADR-014 Event-Driven Architecture
+- API Specification
+- Database Design
+- Security Guide
+- Deployment Guide
+- Backup & Recovery Guide

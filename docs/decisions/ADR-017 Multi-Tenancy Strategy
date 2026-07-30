@@ -1,0 +1,499 @@
+# ADR-017: Multi-Tenancy Strategy
+
+| Field | Value |
+|-------|-------|
+| ADR | 017 |
+| Title | Multi-Tenancy Strategy |
+| Status | Accepted |
+| Date | 2026-07-27 |
+| Decision Makers | R-zension Engineering Team |
+
+---
+
+# Context
+
+R-zension is designed as a Software-as-a-Service (SaaS) platform where multiple organizations use the same application infrastructure.
+
+Each organization (tenant) manages its own
+
+- Users
+- Goals
+- Rankings
+- Analytics
+- Notifications
+- AI Insights
+- Reports
+
+Data belonging to one organization must never be visible or accessible to another organization.
+
+The platform therefore requires a secure, scalable, and maintainable multi-tenancy architecture.
+
+---
+
+# Decision
+
+R-zension will implement a **Shared Database, Shared Schema** multi-tenancy model with **strict logical isolation**.
+
+Every tenant-owned record contains an immutable `organizationId`.
+
+All queries, APIs, services, caches, and AI requests must enforce tenant isolation.
+
+---
+
+# Architecture
+
+```text
+                    R-zension
+
+                         │
+
+        ┌────────────────┼────────────────┐
+
+        ▼                ▼                ▼
+
+ Organization A   Organization B   Organization C
+
+        │                │                │
+
+        └────────────────┼────────────────┘
+
+                Shared Application
+
+                       │
+
+               Shared PostgreSQL
+
+                       │
+
+          Logical Isolation via organizationId
+```
+
+---
+
+# Objectives
+
+The multi-tenancy strategy should
+
+- Ensure complete tenant isolation
+- Support thousands of organizations
+- Minimize operational cost
+- Simplify deployments
+- Enable horizontal scaling
+- Support future enterprise deployments
+
+---
+
+# Tenant Definition
+
+A tenant represents an independent organization using R-zension.
+
+Each tenant owns
+
+- Members
+- Goals
+- Rankings
+- Reports
+- Notifications
+- AI Data
+- Settings
+- Analytics
+
+---
+
+# Tenant Identification
+
+Every authenticated request contains
+
+```text
+organizationId
+```
+
+The backend derives the tenant context from the authenticated user.
+
+Clients must never choose their own tenant context.
+
+---
+
+# Database Strategy
+
+Every tenant-owned table includes
+
+```text
+organization_id
+```
+
+Examples
+
+```text
+users
+
+goals
+
+leaderboards
+
+scores
+
+notifications
+
+analytics
+
+reports
+```
+
+---
+
+# Query Isolation
+
+Every database query must include tenant filtering.
+
+Correct
+
+```sql
+SELECT *
+FROM goals
+WHERE organization_id = :organizationId;
+```
+
+Incorrect
+
+```sql
+SELECT *
+FROM goals;
+```
+
+No service may bypass tenant filtering.
+
+---
+
+# API Isolation
+
+Every API endpoint must validate
+
+- Authentication
+- Organization membership
+- Resource ownership
+- Authorization
+
+Access outside the authenticated tenant must return
+
+```text
+403 Forbidden
+```
+
+or
+
+```text
+404 Not Found
+```
+
+depending on the security policy.
+
+---
+
+# Cache Isolation
+
+Redis keys must include tenant identifiers.
+
+Example
+
+```text
+leaderboard:org:128
+
+dashboard:org:128
+
+analytics:org:128
+```
+
+This prevents cache leakage between organizations.
+
+---
+
+# AI Isolation
+
+Oracle AI receives only tenant-scoped data.
+
+Oracle must never access information from multiple organizations within a single request unless explicitly authorized for administrative analytics.
+
+---
+
+# File Isolation
+
+Uploaded files belong to organizations.
+
+Example storage structure
+
+```text
+organizations/
+
+    org_128/
+
+        reports/
+
+        avatars/
+
+        exports/
+```
+
+Authorization is validated before download.
+
+---
+
+# Notification Isolation
+
+Notifications are tenant-specific.
+
+Users receive notifications only from organizations they belong to.
+
+---
+
+# Audit Logging
+
+Every audit entry includes
+
+- organizationId
+- userId
+- action
+- timestamp
+- requestId
+
+Audit records remain isolated per tenant.
+
+---
+
+# Background Jobs
+
+Scheduled jobs execute within tenant boundaries.
+
+Examples
+
+- Weekly summaries
+- Ranking recalculation
+- Analytics generation
+- Report exports
+
+Jobs must never process multiple tenants in a single execution context unless explicitly designed for administrative purposes.
+
+---
+
+# Cross-Tenant Access
+
+Cross-tenant access is prohibited.
+
+Exceptions
+
+- Platform Super Administrator
+- Platform Monitoring
+- System Maintenance
+- Billing Services (Future)
+
+Such access requires elevated privileges and complete audit logging.
+
+---
+
+# Organization Lifecycle
+
+Supported operations
+
+- Create
+- Update
+- Suspend
+- Archive
+- Restore
+- Delete (Future)
+
+Deletion should follow retention policies before permanent removal.
+
+---
+
+# Performance
+
+Indexes should include
+
+```text
+organization_id
+```
+
+Common composite indexes
+
+```text
+organization_id, user_id
+
+organization_id, rank
+
+organization_id, created_at
+```
+
+This improves tenant-specific query performance.
+
+---
+
+# Monitoring
+
+Track
+
+- Active tenants
+- Requests per tenant
+- Storage usage
+- AI usage
+- Notification volume
+- Cache usage
+- Database performance
+
+Per-tenant metrics enable operational insights.
+
+---
+
+# Security
+
+Tenant isolation is enforced at every layer
+
+- Authentication
+- Authorization
+- Database
+- Cache
+- File Storage
+- AI
+- Notifications
+- Audit Logs
+
+Security reviews should validate tenant isolation continuously.
+
+---
+
+# Backup Strategy
+
+Backups include all tenant data.
+
+Future enhancements may support
+
+- Tenant-level restore
+- Tenant migration
+- Tenant export
+
+---
+
+# Scalability
+
+The architecture should support
+
+- Thousands of organizations
+- Millions of users
+- Horizontal application scaling
+- Read replicas
+- Distributed caching
+
+Future migration to isolated databases should remain possible without major application redesign.
+
+---
+
+# Alternatives Considered
+
+## Separate Database per Tenant
+
+Pros
+
+- Strong isolation
+- Easy tenant backup
+- Enterprise flexibility
+
+Cons
+
+- Higher infrastructure cost
+- Operational complexity
+- Difficult migrations
+- Increased maintenance
+
+Decision
+
+Deferred for enterprise editions.
+
+---
+
+## Separate Schema per Tenant
+
+Pros
+
+- Better logical separation
+
+Cons
+
+- Schema management complexity
+- Difficult upgrades
+- Migration overhead
+
+Decision
+
+Rejected.
+
+---
+
+## Shared Database, Shared Schema
+
+Pros
+
+- Cost effective
+- Simple deployment
+- Easy scaling
+- Mature SaaS architecture
+- Efficient resource utilization
+
+Decision
+
+Accepted.
+
+---
+
+# Consequences
+
+Positive
+
+- Excellent scalability
+- Lower operational costs
+- Easier maintenance
+- Simplified deployments
+- Consistent architecture
+
+Negative
+
+- Strict discipline required for tenant filtering
+- Additional testing requirements
+- Strong authorization enforcement needed
+
+---
+
+# Future Evolution
+
+Future enterprise capabilities include
+
+- Dedicated databases
+- Dedicated infrastructure
+- Regional tenant placement
+- Bring Your Own Database (BYOD)
+- Tenant migration tooling
+- Cross-region disaster recovery
+- Enterprise compliance controls
+
+The current architecture intentionally allows these capabilities to be introduced incrementally.
+
+---
+
+# Decision Summary
+
+R-zension adopts a Shared Database, Shared Schema multi-tenancy model with strict logical isolation enforced through `organizationId`. Every application layer—including APIs, database queries, caching, AI, notifications, and file storage—must respect tenant boundaries, providing a scalable SaaS architecture while maintaining strong data isolation and security.
+
+---
+
+# Related ADRs
+
+- ADR-002 System Architecture
+- ADR-005 Database Strategy
+- ADR-007 Authentication Strategy
+- ADR-008 Containerization Strategy
+- ADR-009 Caching Strategy
+- ADR-013 Oracle AI Decision System
+- ADR-014 Event-Driven Architecture
+- ADR-016 File Storage Strategy
+- Database Design
+- Security Guide
+- Deployment Guide
+- Audit Logging Guide
