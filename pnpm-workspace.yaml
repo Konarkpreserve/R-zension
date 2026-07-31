@@ -2,4 +2,6 @@ packages:
   - 'apps/*'
   - 'packages/*'
   - 'infrastructure/*'
+allowBuilds:
+  esbuild: true
 minimumReleaseAge: 0
