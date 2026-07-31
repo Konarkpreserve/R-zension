@@ -2,20 +2,19 @@
   "name": "r-zension",
   "version": "0.1.0",
   "private": true,
-  "description": "Competitive Growth Platform with Intelligent Performance Insights.",
-  "workspaces": [
-    "client",
-    "server"
-  ],
+  "description": "R-zension — AI-Powered Competitive Growth Platform.",
+  "packageManager": "pnpm@9.0.0",
   "scripts": {
-    "install": "npm install --workspaces --include-workspace-root --ignore-scripts",
-    "dev": "npm run dev --workspaces --if-present",
-    "build": "npm run build --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present",
-    "format": "npm run format --workspaces --if-present"
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test"
+  },
+  "devDependencies": {
+    "turbo": "^1.13.0"
   },
   "engines": {
     "node": ">=20.0.0",
-    "npm": ">=10.0.0"
+    "pnpm": ">=9.0.0"
   }
 }

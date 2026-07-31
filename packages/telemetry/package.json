@@ -1,0 +1,6 @@
+{
+  "name": "@r-zension/telemetry",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Telemetry metrics aggregation and event parser utilities for R-zension."
+}
