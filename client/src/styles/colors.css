@@ -1,20 +1,37 @@
 :root {
-  /* Backgrounds */
-  --bg-primary: #0b0f17;
-  --bg-secondary: #121826;
-  --bg-card: #1a2233;
+  /* Background Hierarchy */
+  --bg-l0: #070a10;
+  --bg-l1: #0d111a;
+  --bg-l2: #131a26;
+  --bg-l3: #1b2433;
+  --bg-glass: rgba(18, 24, 36, 0.55);
 
-  /* Text */
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
+  /* Primary Brand Colors */
+  --ascension-blue: #3b82f6;
+  --oracle-cyan: #22d3ee;
+  --zenith-violet: #8b5cf6;
+  --momentum-emerald: #22c55e;
 
-  /* Brand */
-  --accent-primary: #22d3ee;
-  --accent-secondary: #8b5cf6;
-  --accent-success: #22c55e;
-  --accent-warning: #f59e0b;
-  --accent-danger: #ef4444;
+  /* Typography Colors */
+  --text-pure: #ffffff;
+  --text-soft: #f1f5f9;
+  --text-medium: #94a3b8;
+  --text-muted: #64748B;
 
-  /* Borders */
-  --border-color: #2a3448;
+  /* Semantic State Colors */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #38bdf8;
+
+  /* Leaderboard Rank Tiers */
+  --tier-gold: #fbbf24;
+  --tier-silver: #cbd5e1;
+  --tier-bronze: #d97706;
+
+  /* Borders & Shadows */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.16);
+  --glow-cyan: rgba(34, 211, 238, 0.15);
+  --glow-violet: rgba(139, 92, 246, 0.15);
 }
