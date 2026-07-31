@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "R-zension — AI-Powered Competitive Growth Platform.",
-  "packageManager": "pnpm@9.0.0",
+  "packageManager": "pnpm@11.18.0",
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",

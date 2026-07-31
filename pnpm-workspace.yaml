@@ -2,3 +2,4 @@ packages:
   - 'apps/*'
   - 'packages/*'
   - 'infrastructure/*'
+minimumReleaseAge: 0
