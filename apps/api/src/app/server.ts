@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify';
+import { appLogger } from '../common/logger/index.js';
 import { config } from '../config/index.js';
 
 export async function startServer(app: FastifyInstance): Promise<void> {
@@ -7,9 +8,21 @@ export async function startServer(app: FastifyInstance): Promise<void> {
       port: config.server.port,
       host: config.server.host,
     });
-    app.log.info(`R-zension API Server listening at ${address}`);
+    appLogger.info({ address, port: config.server.port, host: config.server.host }, `R-zension API Server listening at ${address}`);
+
+    const handleShutdown = (signal: string) => {
+      appLogger.info({ signal }, `Received ${signal} signal. Initiating graceful shutdown...`);
+
+      app.close().then(() => {
+        appLogger.info({ signal }, 'Fastify server closed cleanly. Process exiting.');
+        process.exit(0);
+      });
+    };
+
+    process.on('SIGINT', () => handleShutdown('SIGINT'));
+    process.on('SIGTERM', () => handleShutdown('SIGTERM'));
   } catch (err) {
-    app.log.error(err, 'Failed to start Fastify server');
+    appLogger.error({ err }, 'Failed to start Fastify server');
     process.exit(1);
   }
 }
