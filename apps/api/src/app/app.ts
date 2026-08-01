@@ -1,4 +1,6 @@
 import Fastify, { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+
+import { ErrorFormatter, NotFoundError } from '../common/errors/index.js';
 import { errorLogger, logger } from '../common/logger/index.js';
 import { config } from '../config/index.js';
 import { registerGlobalHooks } from '../hooks/index.js';
@@ -17,10 +19,18 @@ export async function buildApp(): Promise<FastifyInstance> {
   // Register Global Request Hooks
   registerGlobalHooks(app);
 
-  // Custom Error Handler for Error Logging
-  app.setErrorHandler((error: Error & { statusCode?: number; code?: string }, request: FastifyRequest, reply: FastifyReply) => {
-    const statusCode = error.statusCode || 500;
+  // Custom 404 Not Found Handler
+  app.setNotFoundHandler((request: FastifyRequest, reply: FastifyReply) => {
+    const notFoundError = new NotFoundError(`Route ${request.method} ${request.url} not found`);
+    const { statusCode, payload } = ErrorFormatter.format(notFoundError, request.id, config.app.isProduction);
+
+    reply.status(statusCode).send(payload);
+  });
+
+  // Centralized Global Fastify Error Handler
+  app.setErrorHandler((error: Error, request: FastifyRequest, reply: FastifyReply) => {
     const correlationId = (request as FastifyRequest & { correlationId?: string }).correlationId || request.id;
+    const { statusCode, payload } = ErrorFormatter.format(error, request.id, config.app.isProduction);
 
     errorLogger.error(
       {
@@ -33,18 +43,12 @@ export async function buildApp(): Promise<FastifyInstance> {
           name: error.name,
           message: error.message,
           stack: error.stack,
-          code: error.code,
         },
       },
-      `HTTP Error ${statusCode}: ${error.message}`
+      `API Error [${payload.error.code}]: ${payload.error.message}`
     );
 
-    reply.status(statusCode).send({
-      statusCode,
-      error: error.name || 'Internal Server Error',
-      message: error.message || 'An unexpected error occurred',
-      timestamp: new Date().toISOString(),
-    });
+    reply.status(statusCode).send(payload);
   });
 
   // Register Business Modules
