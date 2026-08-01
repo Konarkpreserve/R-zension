@@ -5,7 +5,7 @@ import { errorLogger, logger } from '../common/logger/index.js';
 import { config } from '../config/index.js';
 import { registerGlobalHooks } from '../hooks/index.js';
 import { healthRoutes } from '../modules/health/health.route.js';
-import { registerCorePlugins } from '../plugins/sensible.plugin.js';
+import { pluginRegistry } from '../plugins/index.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -13,8 +13,8 @@ export async function buildApp(): Promise<FastifyInstance> {
     disableRequestLogging: true,
   });
 
-  // Register Core Fastify Plugins
-  await registerCorePlugins(app);
+  // Register Core & Infrastructure Plugins via PluginRegistry
+  await pluginRegistry.registerAll(app);
 
   // Register Global Request Hooks
   registerGlobalHooks(app);
