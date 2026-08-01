@@ -7,4 +7,5 @@ export async function healthRoutes(app: FastifyInstance): Promise<void> {
 
   app.get('/health', { schema: healthRouteSchema }, healthController.getHealth);
   app.get('/healthz', { schema: healthRouteSchema }, healthController.getHealth);
+  app.get('/health/infra', healthController.getInfraHealth);
 }

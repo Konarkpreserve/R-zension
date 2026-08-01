@@ -1,11 +1,17 @@
+import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
+import pg from 'pg';
 import { databaseLogger } from '../../common/logger/index.js';
 import { config } from '../../config/index.js';
 
 export function createPrismaClient(): PrismaClient {
   const isDevelopment = config.app.isDevelopment;
 
+  const pool = new pg.Pool({ connectionString: config.database.url });
+  const adapter = new PrismaPg(pool);
+
   const prisma = new PrismaClient({
+    adapter,
     log: isDevelopment
       ? [
           { emit: 'event', level: 'query' },
