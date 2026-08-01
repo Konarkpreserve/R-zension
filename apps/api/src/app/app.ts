@@ -2,6 +2,7 @@ import Fastify, { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 
 import { ErrorFormatter, NotFoundError } from '../common/errors/index.js';
 import { errorLogger, logger } from '../common/logger/index.js';
+import { registerRequestContextDecorator } from '../common/request-context/index.js';
 import { config } from '../config/index.js';
 import { registerGlobalHooks } from '../hooks/index.js';
 import { healthRoutes } from '../modules/health/health.route.js';
@@ -13,6 +14,9 @@ export async function buildApp(): Promise<FastifyInstance> {
     disableRequestLogging: true,
   });
 
+  // Register Request Context Decorator & Request Hook
+  registerRequestContextDecorator(app);
+
   // Register Core & Infrastructure Plugins via PluginRegistry
   await pluginRegistry.registerAll(app);
 
@@ -22,19 +26,21 @@ export async function buildApp(): Promise<FastifyInstance> {
   // Custom 404 Not Found Handler
   app.setNotFoundHandler((request: FastifyRequest, reply: FastifyReply) => {
     const notFoundError = new NotFoundError(`Route ${request.method} ${request.url} not found`);
-    const { statusCode, payload } = ErrorFormatter.format(notFoundError, request.id, config.app.isProduction);
+    const { statusCode, payload } = ErrorFormatter.format(notFoundError, request.requestContext?.requestId || request.id, config.app.isProduction);
 
     reply.status(statusCode).send(payload);
   });
 
   // Centralized Global Fastify Error Handler
   app.setErrorHandler((error: Error, request: FastifyRequest, reply: FastifyReply) => {
-    const correlationId = (request as FastifyRequest & { correlationId?: string }).correlationId || request.id;
-    const { statusCode, payload } = ErrorFormatter.format(error, request.id, config.app.isProduction);
+    const ctx = request.requestContext;
+    const reqId = ctx?.requestId || request.id;
+    const correlationId = ctx?.correlationId || reqId;
+    const { statusCode, payload } = ErrorFormatter.format(error, reqId, config.app.isProduction);
 
     errorLogger.error(
       {
-        reqId: request.id,
+        reqId,
         correlationId,
         method: request.method,
         url: request.url,
