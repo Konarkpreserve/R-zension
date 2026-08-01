@@ -3,5 +3,7 @@ packages:
   - 'packages/*'
   - 'infrastructure/*'
 allowBuilds:
+  '@prisma/engines': true
   esbuild: true
+  prisma: true
 minimumReleaseAge: 0

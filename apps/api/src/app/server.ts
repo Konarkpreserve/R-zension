@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { appLogger } from '../common/logger/index.js';
 import { config } from '../config/index.js';
+import { prismaProvider } from '../core/prisma/index.js';
 
 export async function startServer(app: FastifyInstance): Promise<void> {
   try {
@@ -13,8 +14,9 @@ export async function startServer(app: FastifyInstance): Promise<void> {
     const handleShutdown = (signal: string) => {
       appLogger.info({ signal }, `Received ${signal} signal. Initiating graceful shutdown...`);
 
-      app.close().then(() => {
-        appLogger.info({ signal }, 'Fastify server closed cleanly. Process exiting.');
+      app.close().then(async () => {
+        await prismaProvider.disconnect();
+        appLogger.info({ signal }, 'Fastify server and infrastructure closed cleanly. Process exiting.');
         process.exit(0);
       });
     };

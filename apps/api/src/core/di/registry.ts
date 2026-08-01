@@ -2,12 +2,17 @@ import { appLogger } from '../../common/logger/index.js';
 import { HealthController } from '../../modules/health/health.controller.js';
 import { InMemoryHealthRepository } from '../../modules/health/health.repository.in-memory.js';
 import { HealthService } from '../../modules/health/health.service.js';
+import { prismaProvider } from '../prisma/prisma.provider.js';
 import { REPO_TOKENS } from '../repositories/tokens/repository.tokens.js';
 import { container } from './container.js';
 import { TOKENS } from './service-token.js';
 
 export function setupContainer(): void {
-  appLogger.info('Initializing Dependency Injection container & repository bindings...');
+  appLogger.info('Initializing Dependency Injection container & infrastructure bindings...');
+
+  // Prisma Infrastructure Registration
+  container.register(TOKENS.PrismaProvider, () => prismaProvider, 'singleton');
+  container.register(TOKENS.PrismaClient, (c) => c.resolve(TOKENS.PrismaProvider).getClient(), 'singleton');
 
   // Health Repository Registration
   container.register(REPO_TOKENS.HealthRepository, () => new InMemoryHealthRepository(), 'singleton');

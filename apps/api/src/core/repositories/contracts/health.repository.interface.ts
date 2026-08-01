@@ -4,6 +4,7 @@ export interface SystemHealthCheckRecord {
   timestamp: string;
   uptime: number;
   environment: string;
+  prismaInfrastructure?: string;
 }
 
 export interface IHealthRepository {
