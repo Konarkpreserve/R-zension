@@ -1,3 +1,5 @@
+import { ZodError } from 'zod';
+import { mapZodErrorToDetails } from '../validation/validation.error-map.js';
 import { ApiErrorDetail, AppError } from './app.error.js';
 import { InternalServerError, ValidationError } from './domain.errors.js';
 
@@ -18,6 +20,16 @@ export class ErrorFormatter {
 
     if (error instanceof AppError) {
       normalizedError = error;
+    } else if (error instanceof ZodError) {
+      const details = mapZodErrorToDetails(error);
+      normalizedError = new ValidationError('Request validation failed', details);
+    } else if (error && typeof error === 'object' && 'issues' in error && Array.isArray((error as { issues: unknown[] }).issues)) {
+      const details: ApiErrorDetail[] = (error as { issues: Array<{ path?: string[]; message?: string; code?: string }> }).issues.map((issue) => ({
+        field: issue.path && issue.path.length > 0 ? issue.path.join('.') : undefined,
+        message: issue.message || 'Invalid parameter',
+        rule: issue.code,
+      }));
+      normalizedError = new ValidationError('Request validation failed', details);
     } else if (error && typeof error === 'object' && 'validation' in error && Array.isArray((error as { validation: unknown[] }).validation)) {
       const fastifyValidation = (error as { validation: Array<{ instancePath?: string; message?: string; keyword?: string; params?: { issue?: { path?: string[] } } }> }).validation;
       const details: ApiErrorDetail[] = fastifyValidation.map((item) => ({

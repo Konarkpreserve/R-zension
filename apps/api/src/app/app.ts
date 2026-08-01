@@ -3,6 +3,7 @@ import Fastify, { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ErrorFormatter, NotFoundError } from '../common/errors/index.js';
 import { errorLogger, logger } from '../common/logger/index.js';
 import { registerRequestContextDecorator } from '../common/request-context/index.js';
+import { configureZodValidation } from '../common/validation/index.js';
 import { config } from '../config/index.js';
 import { registerGlobalHooks } from '../hooks/index.js';
 import { healthRoutes } from '../modules/health/health.route.js';
@@ -13,6 +14,9 @@ export async function buildApp(): Promise<FastifyInstance> {
     loggerInstance: logger as any,
     disableRequestLogging: true,
   });
+
+  // Configure Zod Validator & Serializer Compilers
+  configureZodValidation(app);
 
   // Register Request Context Decorator & Request Hook
   registerRequestContextDecorator(app);
