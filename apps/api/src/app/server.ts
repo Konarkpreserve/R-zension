@@ -1,11 +1,11 @@
 import { FastifyInstance } from 'fastify';
-import { envConfig } from '../config/env.config.js';
+import { config } from '../config/index.js';
 
 export async function startServer(app: FastifyInstance): Promise<void> {
   try {
     const address = await app.listen({
-      port: envConfig.PORT,
-      host: envConfig.HOST,
+      port: config.server.port,
+      host: config.server.host,
     });
     app.log.info(`R-zension API Server listening at ${address}`);
   } catch (err) {

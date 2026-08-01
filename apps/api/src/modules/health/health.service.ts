@@ -1,4 +1,4 @@
-import { envConfig } from '../../config/env.config.js';
+import { config } from '../../config/index.js';
 
 export interface HealthStatus {
   status: string;
@@ -13,7 +13,7 @@ export class HealthService {
       status: 'ok',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
-      environment: envConfig.NODE_ENV,
+      environment: config.env.nodeEnv,
     };
   }
 }
