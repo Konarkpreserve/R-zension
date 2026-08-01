@@ -1,5 +1,5 @@
 import { HealthQuery } from '../../common/validation/index.js';
-import { config } from '../../config/index.js';
+import { IHealthRepository } from '../../core/repositories/index.js';
 
 export interface HealthStatus {
   status: string;
@@ -13,12 +13,16 @@ export interface HealthStatus {
 }
 
 export class HealthService {
-  public getHealthStatus(query?: HealthQuery): HealthStatus {
+  constructor(private readonly healthRepository: IHealthRepository) {}
+
+  public async getHealthStatus(query?: HealthQuery): Promise<HealthStatus> {
+    const record = await this.healthRepository.getSystemHealthStatus();
+
     const status: HealthStatus = {
-      status: 'ok',
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-      environment: config.env.nodeEnv,
+      status: record.status,
+      timestamp: record.timestamp,
+      uptime: record.uptime,
+      environment: record.environment,
     };
 
     if (query?.format === 'full' || query?.verbose) {

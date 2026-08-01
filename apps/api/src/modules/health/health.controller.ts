@@ -13,10 +13,10 @@ export class HealthController {
     const ctx = request.requestContext;
     healthLogger.debug(
       { reqId: ctx?.requestId, correlationId: ctx?.correlationId, query: request.query },
-      'Executing validated health check status verification'
+      'Executing repository-backed health check status verification'
     );
 
-    const healthStatus = this.healthService.getHealthStatus(request.query);
+    const healthStatus = await this.healthService.getHealthStatus(request.query);
     reply.status(200).send(healthStatus);
   };
 }
