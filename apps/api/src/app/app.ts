@@ -10,6 +10,7 @@ import { authRoutes } from '../modules/auth/presentation/routes/auth.route.js';
 import { exampleRoutes } from '../modules/example/presentation/routes/example.route.js';
 import { healthRoutes } from '../modules/health/health.route.js';
 import { leaderboardRoutes } from '../modules/leaderboard/presentation/routes/leaderboard.route.js';
+import { oracleRoutes } from '../modules/oracle/presentation/routes/oracle.route.js';
 import { userRoutes } from '../modules/users/presentation/routes/user.route.js';
 import { pluginRegistry } from '../plugins/index.js';
 
@@ -80,6 +81,9 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   // Register Leaderboard Feature Module (Ascension Ladder)
   await app.register(leaderboardRoutes, { prefix: config.app.apiPrefix });
+
+  // Register Oracle Feature Module (Autonomous Intelligence Engine)
+  await app.register(oracleRoutes, { prefix: config.app.apiPrefix });
 
   return app;
 }

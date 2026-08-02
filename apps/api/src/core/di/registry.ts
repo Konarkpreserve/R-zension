@@ -14,6 +14,10 @@ import { LeaderboardApplicationService } from '../../modules/leaderboard/applica
 import { LEADERBOARD_TOKENS } from '../../modules/leaderboard/contracts/leaderboard-module.contract.js';
 import { InMemoryLeaderboardRepository } from '../../modules/leaderboard/infrastructure/repositories/memory/leaderboard.in-memory-repository.js';
 import { LeaderboardController } from '../../modules/leaderboard/presentation/controllers/leaderboard.controller.js';
+import { OracleApplicationService } from '../../modules/oracle/application/services/oracle.application-service.js';
+import { ORACLE_TOKENS } from '../../modules/oracle/contracts/oracle-module.contract.js';
+import { InMemoryOracleReportRepository } from '../../modules/oracle/infrastructure/repositories/memory/oracle-report.in-memory-repository.js';
+import { OracleController } from '../../modules/oracle/presentation/controllers/oracle.controller.js';
 import { UserApplicationService } from '../../modules/users/application/services/user.application-service.js';
 import { USER_TOKENS } from '../../modules/users/contracts/user-module.contract.js';
 import { InMemoryUserRepository } from '../../modules/users/infrastructure/repositories/memory/user.in-memory-repository.js';
@@ -92,6 +96,19 @@ export function setupContainer(): void {
   container.register(
     LEADERBOARD_TOKENS.LeaderboardController,
     (c) => new LeaderboardController(c.resolve(LEADERBOARD_TOKENS.LeaderboardApplicationService)),
+    'singleton'
+  );
+
+  // Oracle Feature Module Registration (Autonomous Intelligence Engine)
+  container.register(ORACLE_TOKENS.OracleReportRepository, () => new InMemoryOracleReportRepository(), 'singleton');
+  container.register(
+    ORACLE_TOKENS.OracleApplicationService,
+    () => new OracleApplicationService(),
+    'singleton'
+  );
+  container.register(
+    ORACLE_TOKENS.OracleController,
+    (c) => new OracleController(c.resolve(ORACLE_TOKENS.OracleApplicationService)),
     'singleton'
   );
 }
