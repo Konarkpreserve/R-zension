@@ -10,6 +10,10 @@ import { ExampleController } from '../../modules/example/presentation/controller
 import { HealthController } from '../../modules/health/health.controller.js';
 import { InMemoryHealthRepository } from '../../modules/health/health.repository.in-memory.js';
 import { HealthService } from '../../modules/health/health.service.js';
+import { UserApplicationService } from '../../modules/users/application/services/user.application-service.js';
+import { USER_TOKENS } from '../../modules/users/contracts/user-module.contract.js';
+import { InMemoryUserRepository } from '../../modules/users/infrastructure/repositories/memory/user.in-memory-repository.js';
+import { UserController } from '../../modules/users/presentation/controllers/user.controller.js';
 import { prismaProvider } from '../prisma/prisma.provider.js';
 import { REPO_TOKENS } from '../repositories/tokens/repository.tokens.js';
 import { container } from './container.js';
@@ -58,6 +62,19 @@ export function setupContainer(): void {
   container.register(
     AUTH_TOKENS.AuthController,
     (c) => new AuthController(c.resolve(AUTH_TOKENS.AuthApplicationService)),
+    'singleton'
+  );
+
+  // User Feature Module Registration
+  container.register(USER_TOKENS.UserRepository, () => new InMemoryUserRepository(), 'singleton');
+  container.register(
+    USER_TOKENS.UserApplicationService,
+    () => new UserApplicationService(),
+    'singleton'
+  );
+  container.register(
+    USER_TOKENS.UserController,
+    (c) => new UserController(c.resolve(USER_TOKENS.UserApplicationService)),
     'singleton'
   );
 }

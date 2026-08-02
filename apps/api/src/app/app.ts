@@ -9,6 +9,7 @@ import { registerGlobalHooks } from '../hooks/index.js';
 import { authRoutes } from '../modules/auth/presentation/routes/auth.route.js';
 import { exampleRoutes } from '../modules/example/presentation/routes/example.route.js';
 import { healthRoutes } from '../modules/health/health.route.js';
+import { userRoutes } from '../modules/users/presentation/routes/user.route.js';
 import { pluginRegistry } from '../plugins/index.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
@@ -72,6 +73,9 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   // Register Authentication Feature Module
   await app.register(authRoutes, { prefix: config.app.apiPrefix });
+
+  // Register User Feature Module
+  await app.register(userRoutes, { prefix: config.app.apiPrefix });
 
   return app;
 }
