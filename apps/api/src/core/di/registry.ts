@@ -1,4 +1,8 @@
 import { appLogger } from '../../common/logger/index.js';
+import { AuthApplicationService } from '../../modules/auth/application/services/auth.application-service.js';
+import { AUTH_TOKENS } from '../../modules/auth/contracts/auth-module.contract.js';
+import { InMemoryAuthSessionRepository } from '../../modules/auth/infrastructure/repositories/memory/auth-session.in-memory-repository.js';
+import { AuthController } from '../../modules/auth/presentation/controllers/auth.controller.js';
 import { ExampleApplicationService } from '../../modules/example/application/services/example.application-service.js';
 import { EXAMPLE_TOKENS } from '../../modules/example/contracts/example-module.contract.js';
 import { InMemoryExampleRepository } from '../../modules/example/infrastructure/repositories/memory/example.in-memory-repository.js';
@@ -41,6 +45,19 @@ export function setupContainer(): void {
   container.register(
     EXAMPLE_TOKENS.ExampleController,
     (c) => new ExampleController(c.resolve(EXAMPLE_TOKENS.ExampleApplicationService)),
+    'singleton'
+  );
+
+  // Auth Feature Module Registration
+  container.register(AUTH_TOKENS.AuthSessionRepository, () => new InMemoryAuthSessionRepository(), 'singleton');
+  container.register(
+    AUTH_TOKENS.AuthApplicationService,
+    () => new AuthApplicationService(),
+    'singleton'
+  );
+  container.register(
+    AUTH_TOKENS.AuthController,
+    (c) => new AuthController(c.resolve(AUTH_TOKENS.AuthApplicationService)),
     'singleton'
   );
 }

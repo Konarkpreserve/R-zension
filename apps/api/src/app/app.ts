@@ -6,6 +6,7 @@ import { registerRequestContextDecorator } from '../common/request-context/index
 import { configureZodValidation } from '../common/validation/index.js';
 import { config } from '../config/index.js';
 import { registerGlobalHooks } from '../hooks/index.js';
+import { authRoutes } from '../modules/auth/presentation/routes/auth.route.js';
 import { exampleRoutes } from '../modules/example/presentation/routes/example.route.js';
 import { healthRoutes } from '../modules/health/health.route.js';
 import { pluginRegistry } from '../plugins/index.js';
@@ -68,6 +69,9 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   // Register Example Feature Module (Canonical Blueprint)
   await app.register(exampleRoutes, { prefix: config.app.apiPrefix });
+
+  // Register Authentication Feature Module
+  await app.register(authRoutes, { prefix: config.app.apiPrefix });
 
   return app;
 }
