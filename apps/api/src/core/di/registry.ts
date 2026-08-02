@@ -10,6 +10,10 @@ import { ExampleController } from '../../modules/example/presentation/controller
 import { HealthController } from '../../modules/health/health.controller.js';
 import { InMemoryHealthRepository } from '../../modules/health/health.repository.in-memory.js';
 import { HealthService } from '../../modules/health/health.service.js';
+import { LeaderboardApplicationService } from '../../modules/leaderboard/application/services/leaderboard.application-service.js';
+import { LEADERBOARD_TOKENS } from '../../modules/leaderboard/contracts/leaderboard-module.contract.js';
+import { InMemoryLeaderboardRepository } from '../../modules/leaderboard/infrastructure/repositories/memory/leaderboard.in-memory-repository.js';
+import { LeaderboardController } from '../../modules/leaderboard/presentation/controllers/leaderboard.controller.js';
 import { UserApplicationService } from '../../modules/users/application/services/user.application-service.js';
 import { USER_TOKENS } from '../../modules/users/contracts/user-module.contract.js';
 import { InMemoryUserRepository } from '../../modules/users/infrastructure/repositories/memory/user.in-memory-repository.js';
@@ -75,6 +79,19 @@ export function setupContainer(): void {
   container.register(
     USER_TOKENS.UserController,
     (c) => new UserController(c.resolve(USER_TOKENS.UserApplicationService)),
+    'singleton'
+  );
+
+  // Leaderboard Feature Module Registration (Ascension Ladder)
+  container.register(LEADERBOARD_TOKENS.LeaderboardRepository, () => new InMemoryLeaderboardRepository(), 'singleton');
+  container.register(
+    LEADERBOARD_TOKENS.LeaderboardApplicationService,
+    () => new LeaderboardApplicationService(),
+    'singleton'
+  );
+  container.register(
+    LEADERBOARD_TOKENS.LeaderboardController,
+    (c) => new LeaderboardController(c.resolve(LEADERBOARD_TOKENS.LeaderboardApplicationService)),
     'singleton'
   );
 }

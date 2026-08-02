@@ -1,0 +1,8 @@
+export enum TierEnum {
+  NOVICE = 'NOVICE',
+  CONTENDER = 'CONTENDER',
+  ASCENDANT = 'ASCENDANT',
+  ELITE = 'ELITE',
+  MASTER = 'MASTER',
+  LEGEND = 'LEGEND',
+}

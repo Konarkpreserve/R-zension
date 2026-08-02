@@ -1,0 +1,5 @@
+export enum DivisionEnum {
+  DIVISION_I = 'DIVISION_I',
+  DIVISION_II = 'DIVISION_II',
+  DIVISION_III = 'DIVISION_III',
+}

@@ -9,6 +9,7 @@ import { registerGlobalHooks } from '../hooks/index.js';
 import { authRoutes } from '../modules/auth/presentation/routes/auth.route.js';
 import { exampleRoutes } from '../modules/example/presentation/routes/example.route.js';
 import { healthRoutes } from '../modules/health/health.route.js';
+import { leaderboardRoutes } from '../modules/leaderboard/presentation/routes/leaderboard.route.js';
 import { userRoutes } from '../modules/users/presentation/routes/user.route.js';
 import { pluginRegistry } from '../plugins/index.js';
 
@@ -76,6 +77,9 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   // Register User Feature Module
   await app.register(userRoutes, { prefix: config.app.apiPrefix });
+
+  // Register Leaderboard Feature Module (Ascension Ladder)
+  await app.register(leaderboardRoutes, { prefix: config.app.apiPrefix });
 
   return app;
 }
